@@ -13,9 +13,23 @@ var romanToInt = map[string]int{
 	"VI": 6, "VII": 7, "VIII": 8, "IX": 9, "X": 10,
 }
 
-var intToRoman = map[int]string{
-	1: "I", 2: "II", 3: "III", 4: "IV", 5: "V",
-	6: "VI", 7: "VII", 8: "VIII", 9: "IX", 10: "X",
+var intToRoman = []struct {
+	value   int
+	numeral string
+}{
+	{1000, "M"},
+	{900, "CM"},
+	{500, "D"},
+	{400, "CD"},
+	{100, "C"},
+	{90, "XC"},
+	{50, "L"},
+	{40, "XL"},
+	{10, "X"},
+	{9, "IX"},
+	{5, "V"},
+	{4, "IV"},
+	{1, "I"},
 }
 
 func main() {
@@ -34,7 +48,7 @@ func main() {
 	isRoman := isRomanNumeral(aStr) && isRomanNumeral(bStr)
 	isArabic := isArabicNumeral(aStr) && isArabicNumeral(bStr)
 
-	if isRoman == isArabic {
+	if !isRoman && !isArabic {
 		panic("Некорректный ввод. Используйте только арабские или только римские цифры.")
 	}
 
@@ -42,8 +56,8 @@ func main() {
 	var err error
 
 	if isRoman {
-		a = romanToInt[aStr]
-		b = romanToInt[bStr]
+		a = romanToArabic(aStr)
+		b = romanToArabic(bStr)
 	} else {
 		a, err = strconv.Atoi(aStr)
 		if err != nil {
@@ -77,7 +91,7 @@ func main() {
 		if result < 1 {
 			panic("Результат работы с римскими числами не может быть меньше 1.")
 		}
-		fmt.Println(intToRoman[result])
+		fmt.Println(arabicToRoman(result))
 	} else {
 		fmt.Println(result)
 	}
@@ -91,4 +105,29 @@ func isRomanNumeral(s string) bool {
 func isArabicNumeral(s string) bool {
 	_, err := strconv.Atoi(s)
 	return err == nil
+}
+
+func romanToArabic(s string) int {
+	result := 0
+	for len(s) > 0 {
+		for _, pair := range intToRoman {
+			if strings.HasPrefix(s, pair.numeral) {
+				result += pair.value
+				s = strings.TrimPrefix(s, pair.numeral)
+				break
+			}
+		}
+	}
+	return result
+}
+
+func arabicToRoman(num int) string {
+	result := ""
+	for _, pair := range intToRoman {
+		for num >= pair.value {
+			result += pair.numeral
+			num -= pair.value
+		}
+	}
+	return result
 }
